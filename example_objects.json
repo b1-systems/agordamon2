@@ -1,0 +1,73 @@
+{
+    "hosts": [
+        {
+            "object_name": "generic-host",
+            "object_type": "template",
+            "check_command": "hostalive4",
+            "max_check_attempts": "5",
+            "check_interval": "5m",
+            "retry_interval": "30s"
+        },
+        {
+            "object_name": "Agent",
+            "object_type": "template",
+            "accept_config": true, 
+            "has_agent": true, 
+            "master_should_connect": false
+        },
+        {
+            "object_name": "linux",
+            "object_type": "object",
+            "address": "127.0.0.1",
+            "imports": ["generic-host", "Agent"],
+            "vars": {
+                "OS": "Linux"
+            }
+        }
+    ],
+    "commands": [
+    ],
+    "timeperiods": [
+        {
+            "display_name": "8x5",
+            "object_name": "8x5",
+            "object_type": "object",
+            "ranges": {
+                "monday": "09:00-17:00",
+                "tuesday": "09:00-24:00",
+                "wednesday": "09:00-17:00",
+                "thursday": "09:00-17:00",
+                "friday": "09:00-17:00"
+            }
+        },
+        {
+            "display_name": "24x7",
+            "object_name": "24x7",
+            "object_type": "object",
+            "ranges": {
+                "friday": "00:00-24:00",
+                "monday": "00:00-24:00",
+                "saturday": "00:00-24:00",
+                "sunday": "00:00-24:00",
+                "thursday": "00:00-24:00",
+                "tuesday": "00:00-24:00",
+                "wednesday": "00:00-24:00"
+            }
+        }
+    ],
+    "services": [
+        {
+            "object_name": "disk-template",
+            "object_type": "template",
+            "imports": ["generic-service"],
+            "check_command": "disk",
+            "use_agent": true
+        },
+        {
+            "object_type": "apply",
+            "object_name": "check disks",
+            "imports": ["disk-template"],
+            "assign_filter": "host.vars.OS=\"Linux\""
+        }
+    ]
+}
