@@ -16,8 +16,9 @@ params.add_argument('--url', required=True, help="API URL.", default="")
 params.add_argument('--path', required=False,  default="/icingaweb2/director",
         help="Path to API, needed if not http(s)://example.com/icingaweb2/director.")
 params.add_argument('--password', '-p', required=False, help="Password for API user.", default="")
-params.add_argument('--askpass', '-a', required=False, action='store_const', const=True, help="Ask for password.")
+params.add_argument('--askpass', required=False, action='store_const', const=True, help="Ask for password.")
 params.add_argument('--deploy', '-d', required=False, action='store_const', const=True, help="Deploy config in director at the end.")
+params.add_argument('--action', required=False, default='create' help="API URL.", default="")
 
 args = params.parse_args()
 filename = args.objectsfile
@@ -35,6 +36,9 @@ if args.askpass:
 
 api_address = args.url+args.path
 deploy = args.deploy
+action = args.action
+if (action != 'create') or (action != 'delete'):
+  print("Invalid action, allowed values: create and delete")
 
 ############### functions: ######################
 def get_templates(obj_type):
@@ -111,6 +115,13 @@ def build_request_url(object_type, obj):
 def create_update_object(obj_type, obj):
     request_url = build_request_url(obj_type, obj)
     call_api(request_url, obj, 'POST')
+
+def delete_object(obj_type, obj):
+    if does_object_exist(obj_type, obj):
+        request_url = build_request_url(obj_type, obj)
+        call_api(request_url, obj, 'DELETE')
+    else:
+        print("object does not exit..")
 
 def deploy_config():
     r = call_api(api_address+"/config/deploy")
