@@ -61,32 +61,36 @@ def get_applyrules(obj_type):
         sys.exit(2)
     return rules
 
-def does_object_exist(obj_type, obj_name):
+def does_object_exist(obj_type, obj):
+    if obj['object_type'] == 'template':
+        if obj['object_name'] in get_templates(obj_type):
+            print("Template-Object \"{}\" of type \"{}\" already exists...".format(obj['object_name'], obj_type))
+            return 1
+        else:
+            print("Template-Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
+            return 0
     path = "/"+obj_type+"?name="+obj_name
     request_url = api_address+path
     r = call_api(request_url, None)
     if str(r.status_code) != '404':
+        print("Object \"{}\" of type \"{}\" already exists...".format(obj['object_name'], obj_type))
         return 1
     else:
+        print("Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
         return 0
 
-def create_update_object(obj_type, obj):
+def get_apply_rule_id(obj_type, object_name):
+    rules = get_applyrules(obj_type)
+    found_id = ""
+    for rule in rules:
+        if rule['object_name'] == obj['object_name']:
+            found_id = rule['id']
+    return found_id
+
+def build_request_url(object_type, obj):
     # check if object already exists
-    if obj['object_type'] == 'template':
-        # we have to fetch all templates and compare the object_names to check if it already exists
-        # trying to get it by its name, like with hosts, does not work (a BUG?)
-        if obj['object_name'] in get_templates(obj_type):
-            print("Template-Object \"{}\" of type \"{}\" already exists...".format(obj['object_name'], obj_type))
-            request_url = api_address+"/"+obj_type+"?name="+obj['object_name']
-        else:
-            print("Template-Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
-            request_url = api_address+"/"+obj_type
-    elif obj['object_type'] == 'apply':
-        rules = get_applyrules(obj_type)
-        found_id = ""
-        for rule in rules:
-            if rule['object_name'] == obj['object_name']:
-                found_id = rule['id']
+    if obj['object_type'] == 'apply':
+        found_id = get_apply_rule_id(obj_type, obj['object_name'])
         if found_id != "":
             print("Object \"{}\" of type \"{}\" already exists with id {}...".format(obj['object_name'], obj_type, found_id))
             request_url = api_address+"/"+obj_type+"?id="+found_id
@@ -95,14 +99,15 @@ def create_update_object(obj_type, obj):
             request_url = api_address+"/"+obj_type
     else:
         if does_object_exist(obj_type, obj['object_name']):
-            print("Object \"{}\" of type \"{}\" already exists...".format(obj['object_name'], obj_type))
             request_url = api_address+"/"+obj_type+"?name="+obj['object_name']
         else:
-            print("Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
             request_url = api_address+"/"+obj_type
 
-    r = call_api(request_url, obj)
-    return r
+    return request_url
+
+def create_update_object(obj_type, obj):
+    request_url = build_request_url(obj_type, obj)
+    call_api(request_url, obj, 'POST')
 
 def deploy_config():
     r = call_api(api_address+"/config/deploy")
