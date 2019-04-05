@@ -61,6 +61,9 @@ def get_applyrules(obj_type):
         sys.exit(2)
     return rules
 
+# check if object exists, if yes add ?name=$hostname...
+# if its a rule we have to look for the id to change it
+# for templates we have to look into all templates if it already exists
 def does_object_exist(obj_type, obj):
     if obj['object_type'] == 'template':
         if obj['object_name'] in get_templates(obj_type):
@@ -69,7 +72,7 @@ def does_object_exist(obj_type, obj):
         else:
             print("Template-Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
             return 0
-    path = "/"+obj_type+"?name="+obj_name
+    path = "/"+obj_type+"?name="+obj['object_name']
     request_url = api_address+path
     r = call_api(request_url, None)
     if str(r.status_code) != '404':
@@ -98,7 +101,7 @@ def build_request_url(object_type, obj):
             print("Object \"{}\" of type \"{}\" does not exist yet...".format(obj['object_name'], obj_type))
             request_url = api_address+"/"+obj_type
     else:
-        if does_object_exist(obj_type, obj['object_name']):
+        if does_object_exist(obj_type, obj):
             request_url = api_address+"/"+obj_type+"?name="+obj['object_name']
         else:
             request_url = api_address+"/"+obj_type
@@ -136,9 +139,6 @@ def call_api(url, data = None, method = 'POST'):
 with open(filename, 'r') as objectsfile:
     data = yaml.load(objectsfile)
 
-# check if object exists, if yes add ?name=$hostname...
-# if its a rule we have to look for the id to change it
-# for templates we have to look into all templates if it already exists
 failed = False
 for obj_type in ('timeperiod', 'command', 'host', 'service' ):
     if obj_type+"s" in data:
