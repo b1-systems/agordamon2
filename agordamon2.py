@@ -96,7 +96,8 @@ def call_api(url, data = None, method = 'POST'):
             headers=headers,
             auth=(api_user, api_passwd),
             data=json.dumps(data),
-            verify=None
+            verify=None,
+            proxies=proxies
             )
     return r
 
@@ -118,6 +119,7 @@ if __name__ == "__main__":
   params.add_argument('--askpass', '-a', required=False, action='store_const', const=True, help="Ask for password.")
   params.add_argument('--deploy', '-d', required=False, action='store_const', const=True, help="Deploy config in director at the end.")
   params.add_argument('--debug', required=False, action='store_const', const=True, help="Debug output.")
+  params.add_argument('--proxy', required=False, help="Proxy URL")
 
   args = params.parse_args()
   filename = args.objectsfile
@@ -136,6 +138,12 @@ if __name__ == "__main__":
   api_address = args.url+args.path
   deploy = args.deploy
   debug = args.debug
+
+  if args.proxy:
+      proxies = {'http': args.proxy, 'https': args.proxy}
+  else:
+      proxies = {}
+
 
   with open(filename, 'r') as objectsfile:
       data = yaml.load(objectsfile)
