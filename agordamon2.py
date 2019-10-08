@@ -152,7 +152,7 @@ if __name__ == "__main__":
   # if its a rule we have to look for the id to change it
   # for templates we have to look into all templates if it already exists
   failed = False
-  for obj_type in ('timeperiod', 'command', 'host', 'service' ):
+  for obj_type in ('timeperiod', 'command', 'hostgroup', 'host', 'service' ):
       if obj_type+"s" in data:
           for obj in data[obj_type+"s"]:
               if type(obj) is dict:
