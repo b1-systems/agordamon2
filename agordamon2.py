@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 
   with open(filename, 'r') as objectsfile:
-      data = yaml.load(objectsfile)
+      data = yaml.load(objectsfile, Loader=yaml.FullLoader)
 
   # check if object exists, if yes add ?name=$hostname...
   # if its a rule we have to look for the id to change it
