@@ -158,11 +158,11 @@ if __name__ == "__main__":
               if type(obj) is dict:
                   r = create_update_object(obj_type, obj)
                   if (r.status_code == 200):
-                      print("Object changed")
+                      print("Object {} changed".format(obj['object_name']))
                   elif (r.status_code == 201):
-                      print("created")
+                      print("Object {} created".format(obj['object_name']))
                   elif (r.status_code == 304):
-                      print("Object not changed")
+                      print("Object {} not changed".format(obj['object_name']))
                   else:
                       failed = True
                       print(r.text)
